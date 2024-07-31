@@ -31,8 +31,20 @@ export const style = (css) => css`
         align-items: center;
     }
     .entities-row .entity {
-        margin-right: 16px;
+        margin-right: 4px;
+        padding: 0 6px;
+        position: relative;
     }
+
+    .entities-row .entity .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        border-radius: 10px;
+    }
+    
     .entities-row .entity:last-of-type {
         margin-right: 0;
     }

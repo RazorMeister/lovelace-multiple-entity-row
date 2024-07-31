@@ -151,9 +151,14 @@ class MultipleEntityRowNew extends LitElement {
             return null;
         }
         const onClick = this.clickHandler(stateObj.entity_id, config.tap_action);
-        return html`<div class="entity" style="${entityStyles(config)}" @click="${onClick}">
-            <span>${entityName(stateObj, config)}</span>
-            <div>${config.icon ? this.renderIcon(stateObj, config) : this.renderValue(stateObj, config)}</div>
+        return html`<div class="entity" style="${entityStyles(config)};" @click="${onClick}">
+            <div class="content">
+                <span>${entityName(stateObj, config)}</span>
+                <div>${config.icon ? this.renderIcon(stateObj, config) : this.renderValue(stateObj, config)}</div>
+            </div>
+            <div class="background">
+                <ha-ripple></ha-ripple>
+            </div>
         </div>`;
     }
 
