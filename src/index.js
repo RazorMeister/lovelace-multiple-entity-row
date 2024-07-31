@@ -7,23 +7,36 @@ import { getEntityIds, hasConfigOrEntitiesChanged, hasGenericSecondaryInfo, hide
 import { style } from './styles';
 
 console.info(
-    '%c MULTIPLE-ENTITY-ROW %c 4.5.1 ',
+    '%c MULTIPLE-ENTITY-ROW-NEW %c 4.5.1 ',
     'color: cyan; background: black; font-weight: bold;',
     'color: darkblue; background: white; font-weight: bold;'
 );
 
-class MultipleEntityRow extends LitElement {
+class MultipleEntityRowNew extends LitElement {
     static get properties() {
         return {
             _hass: Object,
             config: Object,
             stateObj: Object,
+            _helpers: Object
         };
     }
 
-    setConfig(config) {
+    _initialized = false
+
+    async loadCardHelpers() {
+        console.log("INSIDE LOADING CARD HELPERS")
+        this._helpers = await window.loadCardHelpers();
+        console.log(this._helpers)
+        this._initialized = true;
+    }
+
+    async setConfig(config) {
         if (!config || !config.entity) {
             throw new Error('Please define a main entity.');
+        }
+        if (!config || !config.card) {
+            throw new Error('Please define a main card.');
         }
         if (config.entities) {
             config.entities.forEach((entity) => checkEntity(entity));
@@ -36,9 +49,14 @@ class MultipleEntityRow extends LitElement {
         this.onRowClick = this.clickHandler(config.entity, config.tap_action);
 
         this.config = { ...config, name: config.name === false ? ' ' : config.name };
+
+        this.loadCardHelpers();
     }
 
     shouldUpdate(changedProps) {
+        if (changedProps.has('_helpers')) {
+            return true;
+        }
         return hasConfigOrEntitiesChanged(this, changedProps);
     }
 
@@ -46,7 +64,7 @@ class MultipleEntityRow extends LitElement {
         this._hass = hass;
 
         if (hass && this.config) {
-            this.stateObj = hass.states[this.config.entity];
+            this.stateObj = hass.states[this.config.card.entity];
 
             if (isObject(this.config.secondary_info)) {
                 this.info = hass.states[this.config.secondary_info.entity] ?? this.stateObj;
@@ -65,21 +83,38 @@ class MultipleEntityRow extends LitElement {
     }
 
     render() {
-        if (!this._hass || !this.config) return html``;
-        if (!this.stateObj) return this.renderWarning();
+        if (!this._hass || !this.config || !this._helpers) return html``;
 
-        return html`<hui-generic-entity-row
-            .hass="${this._hass}"
-            .config="${this.config}"
-            .secondaryText="${this.renderSecondaryInfo()}"
-            .catchInteraction=${false}
-        >
-            <div class="${this.config.column ? 'entities-column' : 'entities-row'}">
-                ${this.entities.map((entity) => this.renderEntity(entity.stateObj, entity))}${this.renderMainEntity()}
-            </div>
-        </hui-generic-entity-row>`;
+        return html`
+      <div>
+          <div id="overlay" style="right: ${this.config.right ?? 0}">
+              <div class="${this.config.column ? 'entities-column' : 'entities-row'}">
+                  ${this.entities.map((entity) => this.renderEntity(entity.stateObj, entity))}
+              </div>
+          </div>
+          
+        ${this.renderCard(this.config.card)}
+      </div>
+    `;
     }
 
+    renderCard(config) {
+        if (this._hass && this.config && this._helpers) {
+            const element = this.config.row
+                ? this._helpers.createRowElement(config)
+                : this._helpers.createCardElement(config);
+            element.hass = this._hass;
+
+            return html`
+        <div id="card">
+          ${element}
+        </div>
+      `;
+        }
+
+        return html``;
+    }
+    
     renderSecondaryInfo() {
         if (
             !this.config.secondary_info ||
@@ -161,15 +196,9 @@ class MultipleEntityRow extends LitElement {
         ></state-badge>`;
     }
 
-    renderWarning() {
-        return html`<hui-warning>
-            ${this._hass.localize('ui.panel.lovelace.warning.entity_not_found', 'entity', this.config.entity)}
-        </hui-warning>`;
-    }
-
     clickHandler(entity, actionConfig) {
         return () => handleClick(this, this._hass, { entity, tap_action: actionConfig }, false, false);
     }
 }
 
-customElements.define('multiple-entity-row', MultipleEntityRow);
+customElements.define('multiple-entity-row-new', MultipleEntityRowNew);

@@ -1,4 +1,18 @@
 export const style = (css) => css`
+    :host {
+        display: block;
+        position: relative;
+    }
+    #overlay {
+        align-items: center;
+        padding: 8px 7px;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        display: flex;
+    }
+    
     .icon-small {
         width: auto;
     }

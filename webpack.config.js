@@ -5,7 +5,7 @@ module.exports = {
     mode: 'production',
     entry: path.resolve(__dirname, 'src', 'index.js'),
     output: {
-        filename: 'multiple-entity-row.js',
+        filename: 'multiple-entity-row-new.js',
         path: path.resolve(__dirname),
     },
     module: {
